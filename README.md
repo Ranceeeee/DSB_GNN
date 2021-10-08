@@ -9,12 +9,12 @@ Requirements:
 
 # GraphMaker
 Save the NHEK and K562 datasets in the data directory, run the graphmaker.py file, and the running instructions are:  
-  python Graphmaker.py  
+   python Graphmaker.py  
 The generated file is automatically saved in data/NHEK_dgl_data and data/K562_dgl_data folder.
 
 # Model training
 The operation instructions are:  
-  python K562_training.py --test_chr=X --device=device_num  
+  `python K562_training.py --test_chr=X --device=device_num`  
   python NHEK_training.py --test_chr=X --device=device_num  
 Where, X represents the test chromosome number, ranging from 1 to 23, device_num is the GPU number. The trained model will be saved in the model folder.
 
