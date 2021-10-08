@@ -1,6 +1,6 @@
 # DSB_GNN
 Requirements:
-  Python >= 3.6 /
+  Python >= 3.6  
   PyTorch>=1.6
   Numpy>=1.16.0
   torch-geometric>=1.6.0
