@@ -149,7 +149,9 @@ x = data.ndata['feat']
 edge_index = torch.cat((g_test.edges()[0].reshape(1, g_test.edges()[0].shape[0]),
                         g_test.edges()[1].reshape(1, g_test.edges()[1].shape[0])), 0).to(torch.int64).to(device)
 
+edge_index = torch.cat((g_test.edges()[0].reshape(1,g_test.edges()[0].shape[0]), g_test.edges()[1].reshape(1,g_test.edges()[1].shape[0])),0).to(torch.int64).to(device)
 edge_index = add_self_loops(edge_index)[0]
+edge_index = remove_self_loops(edge_index)[0]
 
 out = model(x, edge_index)
 
