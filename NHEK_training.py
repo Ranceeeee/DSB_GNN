@@ -4,7 +4,6 @@ import random
 import torch
 import torch.nn.functional as F
 import torch.nn as nn
-from data_make import DSB
 from torch_geometric.data import DataLoader, NeighborSampler
 from torch_geometric.nn import GATConv, GNNExplainer
 from torch_geometric.nn import JumpingKnowledge
@@ -60,10 +59,10 @@ print('test_chr:', test_chr)
 data = []
 for i in range(1, 24):
 
-    g = dgl.load_graphs("/data/NHEK_dgl_data/chr_" + str(i) + ".dgl")[0][0]
+    g = dgl.load_graphs("/data/wangxu/NHEK_dgl_data/chr_" + str(i) + ".dgl")[0][0]
     # g = dgl.remove_self_loop(g)
     g.ndata['node_id'] = g.nodes().reshape(g.nodes().shape[0], 1)
-    g_density = np.loadtxt('/data/NHEK/Node_EpiFeature_5000_2/chr' + str(i) + '.density.txt')
+    g_density = np.loadtxt('/data/wangxu/NHEK/Node_EpiFeature_5000_2/chr' + str(i) + '.density.txt')
     g.ndata['density'] = torch.from_numpy(g_density)
     density_mean_1 = np.nanmean(g_density[:,0])
     density_mean_2 = np.nanmean(g_density[:,1])
@@ -135,7 +134,7 @@ class Net(torch.nn.Module):
         self.batch_norm = torch.nn.BatchNorm1d(32)
 
         for i in range(1, 3):
-            setattr(self, 'conv{}'.format(i), GATConv(32, 8, heads=4))
+            setattr(self, 'conv{}'.format(i), GATConv(32, 8, heads=4, add_self_loops=False))
             setattr(self, 'line{}'.format(i), nn.Linear(32, 32))
             setattr(self, 'dropout{}'.format(i), nn.Dropout(p=0.5))
             setattr(self, 'batchnorm{}'.format(i), nn.BatchNorm1d(32))

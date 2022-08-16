@@ -1,4 +1,3 @@
-
 import torch
 import torch.nn.functional as F
 from torch_geometric.nn import GATConv, GNNExplainer
@@ -6,7 +5,7 @@ import dgl
 import time
 import numpy as np
 from gnn_explainer import GNNExplainer
-from torch_geometric.utils import add_self_loops
+from torch_geometric.utils import add_self_loops, remove_self_loops
 import argparse
 from sklearn import preprocessing
 from torch_geometric.nn import JumpingKnowledge
@@ -19,7 +18,7 @@ from sklearn.metrics import roc_auc_score
 parser = argparse.ArgumentParser(description='GNN baselines on pcqm4m with Pytorch Geometrics')
 parser.add_argument('--device', type=int, default=0,
                         help='which gpu to use if any (default: 0)')
-parser.add_argument('--test_chr', type=int, default=1,
+parser.add_argument('--test_chr', type=int, default=23,
                         help='which chromosome used to be test')
 parser.add_argument('--learning_rate', type=float, default=0.001,
                         help='learning_rate')
@@ -43,18 +42,19 @@ print('test_chr:', test_chr)
 data = []
 for i in range(1, 24):
 
-    g = dgl.load_graphs("/data/NHEK_dgl_data/chr_" + str(i) + ".dgl")[0][0]
-    g = dgl.remove_self_loop(g)
+    g = dgl.load_graphs("/data/wangxu/NHEK_dgl_data/chr_" + str(i) + ".dgl")[0][0]
+    # g = dgl.remove_self_loop(g)
     g.ndata['node_id'] = g.nodes().reshape(g.nodes().shape[0], 1)
-    g_density = np.loadtxt('/data/NHEK/Node_EpiFeature_5000_2/chr' + str(i) + '.density.txt')
+    g_density = np.loadtxt('/data/wangxu/NHEK/Node_EpiFeature_5000_2/chr' + str(i) + '.density.txt')
     g.ndata['density'] = torch.from_numpy(g_density)
-    density_mean_1 = np.nanmean(g_density[:, 0])
-    density_mean_2 = np.nanmean(g_density[:, 1])
-    nan_index_1 = torch.isnan(g.ndata['density'][:, 0])
-    nan_index_2 = torch.isnan(g.ndata['density'][:, 1])
+    density_mean_1 = np.nanmean(g_density[:,0])
+    density_mean_2 = np.nanmean(g_density[:,1])
+    nan_index_1 = torch.isnan(g.ndata['density'][:,0])
+    nan_index_2 = torch.isnan(g.ndata['density'][:,1])
     g.ndata['density'][:, 0][nan_index_1] = density_mean_1
     g.ndata['density'][:, 1][nan_index_2] = density_mean_2
     data.append(g)
+
 
 if test_chr == 23:
     valid_chr = 1
@@ -103,7 +103,7 @@ class Net(torch.nn.Module):
         self.batch_norm = torch.nn.BatchNorm1d(32)
 
         for i in range(1, 3):
-            setattr(self, 'conv{}'.format(i), GATConv(32, 8, heads=4))
+            setattr(self, 'conv{}'.format(i), GATConv(32, 8, heads=4, add_self_loops=False))
             setattr(self, 'line{}'.format(i), nn.Linear(32, 32))
             setattr(self, 'dropout{}'.format(i), nn.Dropout(p=0.5))
             setattr(self, 'batchnorm{}'.format(i), nn.BatchNorm1d(32))
@@ -127,6 +127,8 @@ class Net(torch.nn.Module):
             line = getattr(self, 'line{}'.format(i))
             batchnorm = getattr(self, 'batchnorm{}'.format(i))
             dropout = getattr(self, 'dropout{}'.format(i))
+            # print(x.shape)
+            # print(conv)
             x = F.elu(conv(x, edge_index) + line(x))
             # x = batchnorm(x)
             x = dropout(x)
@@ -149,9 +151,9 @@ x = data.ndata['feat']
 edge_index = torch.cat((g_test.edges()[0].reshape(1, g_test.edges()[0].shape[0]),
                         g_test.edges()[1].reshape(1, g_test.edges()[1].shape[0])), 0).to(torch.int64).to(device)
 
-edge_index = torch.cat((g_test.edges()[0].reshape(1,g_test.edges()[0].shape[0]), g_test.edges()[1].reshape(1,g_test.edges()[1].shape[0])),0).to(torch.int64).to(device)
-edge_index = add_self_loops(edge_index)[0]
-edge_index = remove_self_loops(edge_index)[0]
+# edge_index = torch.cat((g_test.edges()[0].reshape(1,g_test.edges()[0].shape[0]), g_test.edges()[1].reshape(1,g_test.edges()[1].shape[0])),0).to(torch.int64).to(device)
+# edge_index = add_self_loops(edge_index)[0]
+# edge_index = remove_self_loops(edge_index)[0]
 
 out = model(x, edge_index)
 

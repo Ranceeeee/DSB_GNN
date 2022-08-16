@@ -47,10 +47,10 @@ print('test_chr:', test_chr)
 data = []
 for i in range(1, 24):
 
-    g = dgl.load_graphs("/data/NHEK_dgl_data/chr_" + str(i) + ".dgl")[0][0]
+    g = dgl.load_graphs("/data/wangxu/NHEK_dgl_data/chr_" + str(i) + ".dgl")[0][0]
     g = dgl.remove_self_loop(g)
     g.ndata['node_id'] = g.nodes().reshape(g.nodes().shape[0], 1)
-    g_density = np.loadtxt('/data/NHEK/Node_EpiFeature_5000_2/chr' + str(i) + '.density.txt')
+    g_density = np.loadtxt('/data//wangxu/NHEK/Node_EpiFeature_5000_2/chr' + str(i) + '.density.txt')
     g.ndata['density'] = torch.from_numpy(g_density)
     density_mean_1 = np.nanmean(g_density[:, 0])
     density_mean_2 = np.nanmean(g_density[:, 1])
@@ -285,7 +285,7 @@ for node_idx in range(0, x.shape[0]):
         motif_num = len(topology_num)
         plt.title("motif = " + str(len(topology_num)))
         # plt.show()
-        plt.savefig('explainer/NHEK_motif_' + str(args.test_chr) + '/motif_'  + str(len(topology_num))+'.png')
+        plt.savefig('explainer/NHEK_motif_' + str(args.test_chr) + 'motif_'  + str(len(topology_num))+'.png')
         plt.close()
 
     connected_edge[node_idx + 1][13] = str(motif_num)
